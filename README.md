@@ -1,2 +1,1 @@
-# dental-crosssection
-A repository for statistical analysis of anatomy curriculum data
+This repository is empty. Any task executed on it should be considered a new capability and needs to be created.

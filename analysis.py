@@ -99,62 +99,56 @@ def plot_boxplot(data, x_col, y_col, title, xlabel, ylabel, filename):
     plt.savefig(f'figures/{filename}.png')
     plt.close()
 
-def create_likert_plot(data, questions, question_labels, title, filename):
-    """Create and save diverging bar chart for Likert data."""
+def create_single_likert_plot(data, question, question_label, title, filename, by_cohort=False):
+    """Create and save a Likert plot for a single question."""
     categories = ['Strongly disagree', 'Somewhat disagree', 
                  'Neither agree nor disagree', 
                  'Somewhat agree', 'Strongly agree']
     
-    # Calculate percentages
-    results = []
-    for q in questions:
-        d = data[q].value_counts(normalize=True) * 100
-        d = d.reindex(categories)
-        results.append(d)
+    if by_cohort:
+        # Create separate series for each cohort
+        cohorts = ['cross-section', 'diagnostic-images']
+        results = []
+        for cohort in cohorts:
+            cohort_data = data[data['Cohort'] == cohort]
+            d = cohort_data[question].value_counts(normalize=True) * 100
+            d = d.reindex(categories).fillna(0)
+            results.append(d)
+        df = pd.DataFrame(results, index=cohorts)
+    else:
+        # Create single series for all data
+        d = data[question].value_counts(normalize=True) * 100
+        d = d.reindex(categories).fillna(0)
+        df = pd.DataFrame([d], index=['All Students'])
     
-    df = pd.DataFrame(results, index=question_labels)
-    
-    plt.figure(figsize=(12, 8))
+    # Create plot
+    fig, ax = plt.subplots(figsize=(12, 4))
     colors = ['#ca0020', '#f4a582', '#f7f7f7', '#92c5de', '#0571b0']
     neutral_idx = len(categories) // 2
     
-    # Plot bars
-    left = np.zeros(len(questions))
-    for idx in range(neutral_idx):
-        width = df[categories[idx]]
-        plt.barh(df.index, -width, left=-left, color=colors[idx], 
-                label=categories[idx])
-        left += width
-    
-    left = np.zeros(len(questions))
-    for idx in range(neutral_idx, len(categories)):
-        width = df[categories[idx]]
-        plt.barh(df.index, width, left=left, color=colors[idx], 
-                label=categories[idx])
-        left += width
+    # Plot bars for each row (cohort or overall)
+    for row_idx, row_label in enumerate(df.index):
+        left = 0
+        for cat_idx, category in enumerate(categories):
+            width = df.loc[row_label, category]
+            ax.barh(row_idx, width, left=left, color=colors[cat_idx],
+                   label=category if row_idx == 0 else "")
+            # Add percentage label if >= 5%
+            if width >= 5:
+                ax.text(left + width/2, row_idx, f'{width:.0f}%',
+                       ha='center', va='center')
+            left += width
     
     # Customize plot
-    plt.axvline(0, color='black', linestyle='-', alpha=0.3)
-    plt.title(title, pad=20)
-    plt.xlabel('Percentage of Responses')
+    ax.set_title(f"{title}\n{question_label}", pad=20)
+    ax.set_xlabel('Percentage of Responses')
+    ax.set_yticks(range(len(df.index)))
+    ax.set_yticklabels(df.index)
     
-    # Add percentage labels
-    for i in range(len(df.index)):
-        cumsum = 0
-        for j in range(len(categories)):
-            value = df.iloc[i][categories[j]]
-            if j < neutral_idx:
-                x = -cumsum - value/2
-                cumsum += value
-            else:
-                x = cumsum + value/2
-                cumsum += value
-            if value >= 5:
-                plt.text(x, i, f'{value:.0f}%', ha='center', va='center')
+    # Add legend at the bottom
+    ax.legend(bbox_to_anchor=(0.5, -0.2), loc='upper center', ncol=len(categories),
+             title='Response Scale')
     
-    plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left', title='Response Scale')
-    max_val = max(abs(plt.xlim()[0]), abs(plt.xlim()[1]))
-    plt.xlim(-max_val, max_val)
     plt.tight_layout()
     plt.savefig(f'figures/{filename}.png', bbox_inches='tight', dpi=300)
     plt.close()
@@ -325,9 +319,33 @@ def main():
     
     # Compare Likert responses between groups
     likert_results = []
-    for q in ['Q4_1', 'Q4_2', 'Q4_3']:
-        control_responses = posttest_survey_clean[posttest_survey_clean['Cohort'] == 'Control'][f'{q}_numeric']
-        experimental_responses = posttest_survey_clean[posttest_survey_clean['Cohort'] == 'Experimental'][f'{q}_numeric']
+    likert_questions = ['Q4_1', 'Q4_2', 'Q4_3']
+    question_labels = [
+        'Prepared for interpreting\nradiological images',
+        'Satisfied with presentation\nof anatomical structures',
+        'More confident in identifying\nstructures on images'
+    ]
+    
+    # Create individual plots for each question
+    for q, label in zip(likert_questions, question_labels):
+        # Overall plot for this question
+        create_single_likert_plot(
+            posttest_survey_clean, q, label,
+            'Student Feedback - All Groups',
+            f'likert_q{q[-1]}_overall'
+        )
+        
+        # Cohort comparison plot for this question
+        create_single_likert_plot(
+            posttest_survey_clean, q, label,
+            'Student Feedback by Cohort',
+            f'likert_q{q[-1]}_by_cohort',
+            by_cohort=True
+        )
+        
+        # Statistical comparison
+        control_responses = posttest_survey_clean[posttest_survey_clean['Cohort'] == 'cross-section'][f'{q}_numeric']
+        experimental_responses = posttest_survey_clean[posttest_survey_clean['Cohort'] == 'diagnostic-images'][f'{q}_numeric']
         
         stat, p_value = stats.mannwhitneyu(control_responses, experimental_responses, alternative='two-sided')
         n1, n2 = len(control_responses), len(experimental_responses)
@@ -339,24 +357,6 @@ def main():
         print(f"Effect size (r): {effect_size:.3f}")
         
         likert_results.append((q, p_value, effect_size))
-    likert_questions = ['Q4_1', 'Q4_2', 'Q4_3']
-    question_labels = [
-        'Prepared for interpreting\nradiological images',
-        'Satisfied with presentation\nof anatomical structures',
-        'More confident in identifying\nstructures on images'
-    ]
-    
-    # Create Likert plots
-    for cohort in ['Control', 'Experimental']:
-        cohort_data = posttest_survey_clean[posttest_survey_clean['Cohort'] == cohort]
-        create_likert_plot(cohort_data, likert_questions, question_labels,
-                         f'Student Feedback - {cohort} Group (n={len(cohort_data)})',
-                         f'likert_responses_{cohort.lower()}')
-    
-    # Combined Likert plot
-    create_likert_plot(posttest_survey_clean, likert_questions, question_labels,
-                      f'Student Feedback - All Groups (n={len(posttest_survey_clean)})',
-                      'likert_responses_combined')
     
     print("\nAnalysis complete. All visualizations have been saved to the 'figures' directory.")
 

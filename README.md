@@ -177,3 +177,68 @@ Q4	Axial
    - By cohort (`figures/likert_responses_cross-section.png`, `figures/likert_responses_diagnostic-images.png`)
    - Combined (`figures/likert_responses_combined.png`)
    - Diverging stacked bar charts that display responses on a horizontal axis, with negative responses extending left from center and positive responses extending right
+   - The Likert analysis revealed that students in both cohorts generally responded positively to the cross-section lab. Statistical comparison using Mann-Whitney U tests showed no significant differences between cohorts for preparedness (Q4_1) or confidence (Q4_3), but found that the cross-section group reported higher satisfaction with the presentation of anatomical structures (Q4_2, p = 0.016, r = 0.313). This suggests that while both teaching methods were effective for building confidence and preparedness, students preferred the traditional cross-sectional approach for structure presentation.
+   - Note: Q4_1 was answered "Somewhat Agree" by all respondents
+
+## Analysis Output
+
+python analysis.py
+
+=== Step 1: Data Import ===
+
+
+=== Step 2: Data Quality & Preprocessing ===
+
+
+Cohort sizes in test_results_clean:
+Cohort
+cross-section        32
+diagnostic-images    31
+Name: count, dtype: int64
+
+Cohort sizes in posttest_survey_clean:
+Cohort
+diagnostic-images    30
+cross-section        29
+Name: count, dtype: int64
+
+=== Step 3: Score Analysis ===
+
+
+Independent t-test:
+Statistic: 4.641, p-value: 0.000
+Effect size: 1.170
+
+=== Step 4: Duration Analysis ===
+
+
+Mann-Whitney U test:
+Statistic: 407.000, p-value: 0.224
+Effect size: 0.153
+
+=== Step 5: Question Group Analysis ===
+
+Bonferroni-corrected significance level: 0.0167 (0.05/3)
+
+=== Step 6: Correlation Analysis ===
+
+Using Spearman correlation (non-normal data)
+Correlation coefficient: -0.185
+P-value: 0.146
+
+=== Step 7: Likert Analysis ===
+
+
+Q4_1:
+Mann-Whitney U test: U = 435.000, p = 1.000
+Effect size (r): 0.000
+
+Q4_2:
+Mann-Whitney U test: U = 581.500, p = 0.016
+Effect size (r): 0.313
+
+Q4_3:
+Mann-Whitney U test: U = 518.500, p = 0.167
+Effect size (r): 0.180
+
+Analysis complete. All visualizations have been saved to the 'figures' directory.

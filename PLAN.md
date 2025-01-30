@@ -32,32 +32,73 @@ Q3	Axial
 Q4	Axial
 ```
 
-
 ## Analysis Plan
 
 1. Import data
    1. Test results, `data/question_groups.tsv`
    2. Question grouping, `data/question_groups.tsv`
    3. Post-test survey, `data/posttest_survey.tsv`
-      1. Q2: "Choose all that apply..."
-      2. Q4_1: "This cross-section lab period prepared me for interpreting anatomical structures on radiological images."
-      3. Q4_2: "I am satisfied with the current presentation of anatomical structures in this lab period."
-      4. Q4_3: "I feel more confident in my abilities to identify anatomical structures on radiological images after this lab period."
-      5. Q7: "What changes, if any, would you like to see in this cross-section lab to help you prepare for interpreting radiological images?"
-      6. Q6: "Please feel free to share your experience with this cross-section lab below"
-2. Transform
-   1. Test result TestDuration -> time in seconds
-   2. Post-test survey Q4_1, Q4_2, Q4_3 Likert scales -> 1-5
-3. Tables & Graphs
-   1. Results: scores and durations, table (mean, sd, range, IQR) overall and split by cohort, graph (histogram by cohort)
-   2. Posttest: Q4_1, Q4_2, Q4_3; Likert histogram comparing cohorts
-4. Cohort Comparison
-   1. Results
-      1. Overall
-         1. Score, student's t-test
-         2. Duration, Mann-Whitney
-      2. By question group
-         1. Score, student's t-test
-         2. Duration, Mann-Whitney
-   2. Post-test Survey
-      1. Likert's Q4_1, Q4_2, Q4_3, 
+      1. Q2: “Choose all that apply...”
+      2. Q4_1: “This cross-section lab period prepared me for interpreting anatomical structures on radiological images.”
+      3. Q4_2: “I am satisfied with the current presentation of anatomical structures in this lab period.”
+      4. Q4_3: “I feel more confident in my abilities to identify anatomical structures on radiological images after this lab period.”
+      5. Q7: “What changes, if any, would you like to see in this cross-section lab to help you prepare for interpreting radiological images?”
+      6. Q6: “Please feel free to share your experience with this cross-section lab below”
+
+2. Data Quality & Preprocessing
+   1. Check for missing values, duplicates, data types
+   2. Test result TestDuration -> time in seconds
+   3. Post-test survey Q4_1, Q4_2, Q4_3 Likert scales -> 1-5
+   4. Outlier detection for test durations (boxplot method)
+
+3. Descriptive Statistics & Visualizations
+   1. Results: scores and durations
+      1. Table (mean, sd, range, IQR) overall and split by cohort
+      2. Histogram by cohort with density overlay
+      3. Box plots comparing cohorts
+      4. Scatter plot: duration vs. score with regression line
+   2. Posttest: Q4_1, Q4_2, Q4_3
+      1. Likert histogram comparing cohorts
+      2. Diverging bar chart for Likert responses
+
+4. Statistical Analysis
+   1. Power Analysis
+      1. Calculate achieved power given sample size and effect size
+      2. Determine minimum detectable effect size
+   
+   2. Test Score Analysis
+      1. Normality test (Shapiro-Wilk) for each cohort
+      2. Based on normality:
+         - If normal: Independent t-test
+         - If non-normal: Mann-Whitney U test
+      3. Effect size calculation:
+         - For t-test: Cohen’s d
+         - For Mann-Whitney: r = Z/√N
+      4. 95% confidence intervals for mean/median difference
+
+   3. Duration Analysis
+      1. Normality test (Shapiro-Wilk)
+      2. Choose test based on results (t-test or Mann-Whitney)
+      3. Effect size and confidence intervals
+
+   4. Correlation Analysis
+      1. Test score vs. duration
+         1. Normality test for both variables
+         2. Choose correlation test:
+            - If normal: Pearson
+            - If non-normal: Spearman
+         3. Calculate correlation coefficient and p-value
+         4. Plot correlation with confidence bands
+
+   5. Question Group Analysis
+      1. Normality tests per group
+      2. Multiple comparison correction (Bonferroni)
+      3. Effect sizes for each comparison
+      4. Visualization: Forest plot of effect sizes
+
+5. Post-test Survey Analysis
+   1. Likert Scale Questions (Q4_1, Q4_2, Q4_3)
+      1. Mann-Whitney U tests
+      2. Effect sizes
+      3. Visualization: Diverging stacked bar chart
+

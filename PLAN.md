@@ -8,30 +8,6 @@ This project intends to develop an integrated cross-sectional anatomy curriculum
 
 A needs assessment survey will be offered to dental students to understand their level of preparedness for interpreting diagnostic images following the anatomy and radiology courses they took. During the lab, first-year dental students annotate unlabeled posterboards, working with their lab groups. The students then rotate around the other group's posterboards to fill in or correct labels before answers are revealed. Participants are randomly split into 2 groups: one experimental group that will be asked to identify structures on radiological images only and one control group that will take a similar test to the pretest. Lastly, a posttest survey is intended at gauging student satisfaction and feedback regarding the cross-sectional curriculum, as well as the experimental test's ability in measuring knowledge acquisition.
 
-## Heads
-
-### `posttest_survey.tsv` 
-
-```
-StartDate	EndDate	ID	Cohort	Q2	Q4_1	Q4_2	Q4_3	Q7	Q6
-12/3/24 11:50	12/3/24 11:51	S2841	Control		Somewhat agree	Somewhat agree	Strongly agree	I think it would be helpful to practice differentiating different types of images MRI vs CT. 	I had a great time! Thanks Daania! 
-```
-
-### `test_results.tsv` 
-
-```
-StartDate	EndDate	TestDuration	ID	Cohort	Q3	Q4	Q16	Q17	Q19	Q20	Q22	Q23	Q25	Q26	Q28	Q29	Q31	Q32	Q34	Q35	NumberCorrect	Score
-12/3/24 11:44	12/3/24 11:49	4m 59s 0ms	S2852	diagnostic-images	1	0	1	0	0	1	1	1	1	1	1	1	1	1	1	1	13	81%
-```
-
-### `question_groups.tsv` 
-
-```
-Question  QuestionGroup
-Q3	Axial
-Q4	Axial
-```
-
 ## Analysis Plan
 
 1. Import data
@@ -53,7 +29,7 @@ Q4	Axial
       1. Question groups map to questions
       2. Durations of reasonable length (0 < x < 3600 seconds)
       3. Scores calculated correctly (question columns recorded 1/0 for correct/incorrect)
-   5. Outlier detection for test durations (boxplot me``thod)
+   5. Outlier detection for test durations (boxplot method)
 
 3. Descriptive Statistics & Visualizations
    1. Results: scores and durations
@@ -76,7 +52,7 @@ Q4	Axial
          - If normal: Independent t-test
          - If non-normal: Mann-Whitney U test
       3. Effect size calculation:
-         - For t-test: Cohen’s d
+         - For t-test: Cohen's d
          - For Mann-Whitney: r = Z/√N
       4. 95% confidence intervals for mean/median difference
 
@@ -106,4 +82,83 @@ Q4	Axial
       2. Effect sizes
       3. Visualization: Diverging stacked bar chart
 
-6. Brief summary of methods and results
+6. Brief summary of methods and results in README.md
+
+## Heads
+
+### `posttest_survey.tsv` 
+
+```
+StartDate	EndDate	ID	Cohort	Q2	Q4_1	Q4_2	Q4_3	Q7	Q6
+12/3/24 11:50	12/3/24 11:51	S2841	Control		Somewhat agree	Somewhat agree	Strongly agree	I think it would be helpful to practice differentiating different types of images MRI vs CT. 	I had a great time! Thanks Daania! 
+```
+
+### `test_results.tsv` 
+
+```
+StartDate	EndDate	TestDuration	ID	Cohort	Q3	Q4	Q16	Q17	Q19	Q20	Q22	Q23	Q25	Q26	Q28	Q29	Q31	Q32	Q34	Q35	NumberCorrect	Score
+12/3/24 11:44	12/3/24 11:49	4m 59s 0ms	S2852	diagnostic-images	1	0	1	0	0	1	1	1	1	1	1	1	1	1	1	1	13	81%
+```
+
+### `question_groups.tsv` 
+
+```
+Question  QuestionGroup
+Q3	Axial
+Q4	Axial
+```
+
+## Results
+
+### Key Findings
+
+1. Test Performance
+   - Cross-section group (n=32) significantly outperformed diagnostic-images group (n=31)
+   - Mean scores: 72.2% ± 14.8% vs 54.5% ± 15.4%
+   - Large effect size (Cohen's d = 1.170, p < 0.001)
+
+2. Test Duration
+   - No significant difference between groups
+   - Cross-section: 7.8 ± 2.2 minutes
+   - Diagnostic-images: 8.5 ± 2.5 minutes
+   - Small effect size (r = 0.153, p = 0.167)
+
+3. Score-Duration Relationship
+   - Weak negative correlation (ρ = -0.185)
+   - Not statistically significant (p = 0.167)
+
+4. Student Feedback (Likert Scale)
+   - Preparation for radiological interpretation (Q4_1): No difference between groups
+   - Satisfaction with presentation (Q4_2): Significant difference favoring control group (p = 0.016, r = 0.313)
+   - Confidence in structure identification (Q4_3): No significant difference (p = 0.167, r = 0.180)
+
+### Generated Visualizations
+
+1. Score Distribution (`figures/score_distribution.png`)
+   - Kernel density plots comparing score distributions between cohorts
+   - Shows clear separation between groups
+
+2. Duration Distribution (`figures/duration_distribution.png`)
+   - Kernel density plots comparing test duration distributions
+   - Shows substantial overlap between groups
+
+3. Score Boxplots (`figures/score_boxplot.png`)
+   - Box-and-whisker plots comparing score distributions
+   - Highlights median, quartiles, and potential outliers
+
+4. Duration Boxplots (`figures/duration_boxplot.png`)
+   - Box-and-whisker plots comparing test duration distributions
+   - Identifies duration outliers
+
+5. Score vs Duration (`figures/score_vs_duration.png`)
+   - Scatter plot with regression line and 95% confidence bands
+   - Visualizes weak negative correlation
+
+6. Forest Plot (`figures/forest_plot.png`)
+   - Effect sizes and confidence intervals for question groups
+   - Compares performance across different anatomical planes
+
+7. Likert Responses
+   - By cohort (`figures/likert_responses_cross-section.png`, `figures/likert_responses_diagnostic-images.png`)
+   - Combined (`figures/likert_responses_combined.png`)
+   - Diverging stacked bar charts that display responses on a horizontal axis, with negative responses extending left from center and positive responses extending right

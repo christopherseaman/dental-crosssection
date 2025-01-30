@@ -152,9 +152,25 @@ for col in ['Q4_1', 'Q4_2', 'Q4_3']:
     print(f"\nNumeric Statistics for {col}:")
     print(posttest_survey_clean[f'{col}_numeric'].describe().round(3))
 
-# Calculate correlation between test duration and score
-correlation = test_results_clean['ScoreNumeric'].corr(test_results_clean['DurationSeconds'])
-print(f"\nCorrelation between Score and Duration: {correlation:.3f}")
+# Correlation Analysis
+print("\nCorrelation Analysis:")
+
+# Test normality of score and duration
+score_normal = stats.shapiro(test_results_clean['ScoreNumeric'])[1] > 0.05
+duration_normal = stats.shapiro(test_results_clean['DurationSeconds'])[1] > 0.05
+
+# Choose correlation test based on normality
+if score_normal and duration_normal:
+    correlation, p_value = stats.pearsonr(test_results_clean['ScoreNumeric'], 
+                                        test_results_clean['DurationSeconds'])
+    print("Both variables are normal, using Pearson correlation:")
+else:
+    correlation, p_value = stats.spearmanr(test_results_clean['ScoreNumeric'], 
+                                         test_results_clean['DurationSeconds'])
+    print("One or both variables non-normal, using Spearman correlation:")
+
+print(f"Correlation coefficient: {correlation:.3f}")
+print(f"P-value: {p_value:.3f}")
 
 # 3.3 Visualizations
 print("\nGenerating visualizations...")
@@ -470,6 +486,11 @@ print("\nQuestion Group Analysis:")
 # Prepare question group data
 question_groups_dict = question_groups.set_index('Question')['QuestionGroup'].to_dict()
 
+# Calculate number of tests for Bonferroni correction
+n_tests = len(set(question_groups_dict.values()))
+bonferroni_alpha = 0.05 / n_tests
+print(f"\nBonferroni-corrected significance level: {bonferroni_alpha:.4f} (0.05/{n_tests})")
+
 # Calculate scores and effect sizes by question group
 group_results = []
 for group in set(question_groups_dict.values()):
@@ -532,4 +553,20 @@ plt.tight_layout()
 plt.savefig('figures/forest_plot.png')
 plt.close()
 
-print("\nAnalysis complete. All visualizations have been saved to the 'figures' directory.")
+# 5. Post-test Survey Analysis
+print("\n=== Step 5: Post-test Survey Analysis ===\n")
+
+# Likert Scale Analysis
+print("Likert Scale Analysis:")
+for q in ['Q4_1', 'Q4_2', 'Q4_3']:
+    control_responses = posttest_survey_clean[posttest_survey_clean['Cohort'] == 'Control'][f'{q}_numeric']
+    experimental_responses = posttest_survey_clean[posttest_survey_clean['Cohort'] == 'Experimental'][f'{q}_numeric']
+    
+    stat, p_value = stats.mannwhitneyu(control_responses, experimental_responses, alternative='two-sided')
+    n1, n2 = len(control_responses), len(experimental_responses)
+    z_score = stats.norm.ppf(p_value/2)
+    effect_size = abs(z_score / np.sqrt(n1 + n2))
+    
+    print(f"\n{q}:")
+    print(f"Mann-Whitney U test: U = {stat:.3f}, p = {p_value:.3f}")
+    print(f"Effect size (r): {effect_size:.3f}")

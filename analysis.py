@@ -106,6 +106,20 @@ question_groups = question_groups.drop_duplicates()
 test_results_clean = test_results.copy()
 posttest_survey_clean = posttest_survey.dropna(subset=['Cohort'])  # Remove rows with missing cohort
 
+# Print cohort sizes
+print("\nCohort sizes in test_results_clean:")
+print(test_results_clean['Cohort'].value_counts())
+
+print("\nCohort sizes in posttest_survey_clean:")
+print(posttest_survey_clean['Cohort'].value_counts())
+
+# Check unique values in Cohort column
+print("\nUnique values in test_results_clean['Cohort']:")
+print(test_results_clean['Cohort'].unique())
+
+print("\nUnique values in posttest_survey_clean['Cohort']:")
+print(posttest_survey_clean['Cohort'].unique())
+
 # Step 3: Descriptive Statistics & Visualizations
 print("\n=== Step 3: Descriptive Statistics & Visualizations ===\n")
 
@@ -283,17 +297,41 @@ def create_likert_plot(data, questions, question_labels, title):
     plt.tight_layout()
     return plt
 
-# Create improved Likert plot
+# Create Likert plots for each cohort
 likert_questions = ['Q4_1', 'Q4_2', 'Q4_3']
 question_labels = [
     'Prepared for interpreting\nradiological images',
     'Satisfied with presentation\nof anatomical structures',
     'More confident in identifying\nstructures on images'
 ]
+
+# Map the cohort names from test data to survey data
+cohort_mapping = {
+    'cross-section': 'Control',
+    'diagnostic-images': 'Experimental'
+}
+
+# Print response counts for each cohort
+print("\nLikert Response Counts by Cohort:")
+for test_cohort, survey_cohort in cohort_mapping.items():
+    cohort_data = posttest_survey_clean[posttest_survey_clean['Cohort'] == survey_cohort]
+    print(f"\n{test_cohort} Group (n={len(cohort_data)}):")
+    for q in likert_questions:
+        print(f"\n{q} Distribution:")
+        print(cohort_data[q].value_counts().sort_index())
+    
+    # Create cohort-specific plot
+    fig = create_likert_plot(cohort_data, likert_questions, 
+                            question_labels,
+                            f'Student Feedback - {test_cohort} Group (n={len(cohort_data)})')
+    plt.savefig(f'figures/likert_responses_{test_cohort}.png', bbox_inches='tight', dpi=300)
+    plt.close()
+
+# Create combined plot for comparison
 fig = create_likert_plot(posttest_survey_clean, likert_questions, 
                         question_labels,
-                        'Student Feedback on Cross-Section Lab')
-plt.savefig('figures/likert_responses.png', bbox_inches='tight', dpi=300)
+                        f'Student Feedback - All Groups (n={len(posttest_survey_clean)})')
+plt.savefig('figures/likert_responses_combined.png', bbox_inches='tight', dpi=300)
 plt.close()
 
 # Step 4: Statistical Analysis
@@ -304,7 +342,7 @@ from scipy import stats
 from statsmodels.stats.power import TTestPower
 
 # Calculate effect size (Cohen's d) for scores
-control_scores = test_results_clean[test_results_clean['Cohort'] == 'Control']['ScoreNumeric']
+control_scores = test_results_clean[test_results_clean['Cohort'] == 'cross-section']['ScoreNumeric']
 diagnostic_scores = test_results_clean[test_results_clean['Cohort'] == 'diagnostic-images']['ScoreNumeric']
 
 cohens_d = (control_scores.mean() - diagnostic_scores.mean()) / np.sqrt(
@@ -343,28 +381,48 @@ for cohort in test_results_clean['Cohort'].unique():
     print(f"Statistic: {stat:.3f}, p-value: {p_value:.3f}")
 
 # Perform t-test or Mann-Whitney U test based on normality
-control_scores = test_results_clean[test_results_clean['Cohort'] == 'Control']['ScoreNumeric']
+control_scores = test_results_clean[test_results_clean['Cohort'] == 'cross-section']['ScoreNumeric']
 diagnostic_scores = test_results_clean[test_results_clean['Cohort'] == 'diagnostic-images']['ScoreNumeric']
 
-# Mann-Whitney U test (non-parametric, doesn't assume normality)
-try:
-    stat, p_value = stats.mannwhitneyu(control_scores, diagnostic_scores, alternative='two-sided')
-    print("\nMann-Whitney U test for score differences between cohorts:")
-    print(f"Statistic: {stat:.3f}, p-value: {p_value:.3f}")
+# Get normality test results
+diagnostic_stat, diagnostic_p = stats.shapiro(diagnostic_scores)
+control_stat, control_p = stats.shapiro(control_scores)
+both_normal = diagnostic_p > 0.05 and control_p > 0.05
 
-    # Effect size (r = Z/√N)
+print("\nTest selection for scores:")
+print(f"diagnostic-images normality: p = {diagnostic_p:.3f} ({'normal' if diagnostic_p > 0.05 else 'non-normal'})")
+print(f"cross-section normality: p = {control_p:.3f} ({'normal' if control_p > 0.05 else 'non-normal'})")
+print(f"Using {'t-test' if both_normal else 'Mann-Whitney U test'} based on normality results")
+
+if both_normal:
+    # Use t-test for normal distributions
+    stat, p_value = stats.ttest_ind(control_scores, diagnostic_scores)
+    print("\nBoth groups are normally distributed, using Independent t-test:")
+    print(f"t-statistic: {stat:.3f}, p-value: {p_value:.3f}")
+    
+    # Calculate Cohen's d effect size for t-test
     n1, n2 = len(control_scores), len(diagnostic_scores)
-    if n1 > 0 and n2 > 0:
-        z_score = stats.norm.ppf(p_value/2)  # Convert p-value to z-score
-        effect_size_r = abs(z_score / np.sqrt(n1 + n2))
-        print(f"Effect size (r): {effect_size_r:.3f}")
-    else:
-        print("Cannot calculate effect size: insufficient sample size")
-except Exception as e:
-    print(f"\nCould not perform Mann-Whitney U test: {str(e)}")
+    pooled_std = np.sqrt(((n1 - 1) * control_scores.std()**2 + (n2 - 1) * diagnostic_scores.std()**2) / (n1 + n2 - 2))
+    effect_size = abs(control_scores.mean() - diagnostic_scores.mean()) / pooled_std
+    print(f"Effect size (Cohen's d): {effect_size:.3f}")
+else:
+    # Use Mann-Whitney U test for non-normal distributions
+    stat, p_value = stats.mannwhitneyu(control_scores, diagnostic_scores, alternative='two-sided')
+    print("\nOne or both groups are non-normal, using Mann-Whitney U test:")
+    print(f"U-statistic: {stat:.3f}, p-value: {p_value:.3f}")
+    
+    # Calculate effect size r = Z/√N for Mann-Whitney U test
+    n1, n2 = len(control_scores), len(diagnostic_scores)
+    z_score = stats.norm.ppf(p_value/2)
+    effect_size = abs(z_score / np.sqrt(n1 + n2))
+    print(f"Effect size (r): {effect_size:.3f}")
 
 # 4.3 Duration Analysis
 print("\nDuration Analysis:")
+
+# Get duration data and test normality
+control_durations = test_results_clean[test_results_clean['Cohort'] == 'cross-section']['DurationSeconds']
+diagnostic_durations = test_results_clean[test_results_clean['Cohort'] == 'diagnostic-images']['DurationSeconds']
 
 # Normality test for durations
 for cohort in test_results_clean['Cohort'].unique():
@@ -373,13 +431,38 @@ for cohort in test_results_clean['Cohort'].unique():
     print(f"\nShapiro-Wilk test for {cohort} durations:")
     print(f"Statistic: {stat:.3f}, p-value: {p_value:.3f}")
 
-# Mann-Whitney U test for durations
-control_durations = test_results_clean[test_results_clean['Cohort'] == 'Control']['DurationSeconds']
-diagnostic_durations = test_results_clean[test_results_clean['Cohort'] == 'diagnostic-images']['DurationSeconds']
+# Test selection based on normality
+diagnostic_stat, diagnostic_p = stats.shapiro(diagnostic_durations)
+control_stat, control_p = stats.shapiro(control_durations)
+both_normal = diagnostic_p > 0.05 and control_p > 0.05
 
-stat, p_value = stats.mannwhitneyu(control_durations, diagnostic_durations, alternative='two-sided')
-print("\nMann-Whitney U test for duration differences between cohorts:")
-print(f"Statistic: {stat:.3f}, p-value: {p_value:.3f}")
+print("\nTest selection for durations:")
+print(f"diagnostic-images normality: p = {diagnostic_p:.3f} ({'normal' if diagnostic_p > 0.05 else 'non-normal'})")
+print(f"cross-section normality: p = {control_p:.3f} ({'normal' if control_p > 0.05 else 'non-normal'})")
+print(f"Using {'t-test' if both_normal else 'Mann-Whitney U test'} based on normality results")
+
+if both_normal:
+    # Use t-test for normal distributions
+    stat, p_value = stats.ttest_ind(control_durations, diagnostic_durations)
+    print("\nBoth groups are normally distributed, using Independent t-test:")
+    print(f"t-statistic: {stat:.3f}, p-value: {p_value:.3f}")
+    
+    # Calculate Cohen's d effect size for t-test
+    n1, n2 = len(control_durations), len(diagnostic_durations)
+    pooled_std = np.sqrt(((n1 - 1) * control_durations.std()**2 + (n2 - 1) * diagnostic_durations.std()**2) / (n1 + n2 - 2))
+    effect_size = abs(control_durations.mean() - diagnostic_durations.mean()) / pooled_std
+    print(f"Effect size (Cohen's d): {effect_size:.3f}")
+else:
+    # Use Mann-Whitney U test for non-normal distributions
+    stat, p_value = stats.mannwhitneyu(control_durations, diagnostic_durations, alternative='two-sided')
+    print("\nOne or both groups are non-normal, using Mann-Whitney U test:")
+    print(f"U-statistic: {stat:.3f}, p-value: {p_value:.3f}")
+    
+    # Calculate effect size r = Z/√N for Mann-Whitney U test
+    n1, n2 = len(control_durations), len(diagnostic_durations)
+    z_score = stats.norm.ppf(p_value/2)
+    effect_size = abs(z_score / np.sqrt(n1 + n2))
+    print(f"Effect size (r): {effect_size:.3f}")
 
 # 4.4 Question Group Analysis
 print("\nQuestion Group Analysis:")
@@ -393,7 +476,7 @@ for group in set(question_groups_dict.values()):
     questions = [q for q, g in question_groups_dict.items() if g == group]
     group_scores = test_results_clean[questions].mean(axis=1)
     
-    control_group = group_scores[test_results_clean['Cohort'] == 'Control']
+    control_group = group_scores[test_results_clean['Cohort'] == 'cross-section']
     diagnostic_group = group_scores[test_results_clean['Cohort'] == 'diagnostic-images']
     
     # Calculate effect size and CI

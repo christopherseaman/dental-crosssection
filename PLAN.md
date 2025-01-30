@@ -38,24 +38,28 @@ Q4	Axial
    1. Test results, `data/question_groups.tsv`
    2. Question grouping, `data/question_groups.tsv`
    3. Post-test survey, `data/posttest_survey.tsv`
-      1. Q2: “Choose all that apply...”
-      2. Q4_1: “This cross-section lab period prepared me for interpreting anatomical structures on radiological images.”
-      3. Q4_2: “I am satisfied with the current presentation of anatomical structures in this lab period.”
-      4. Q4_3: “I feel more confident in my abilities to identify anatomical structures on radiological images after this lab period.”
-      5. Q7: “What changes, if any, would you like to see in this cross-section lab to help you prepare for interpreting radiological images?”
-      6. Q6: “Please feel free to share your experience with this cross-section lab below”
+      1. Q2: "Choose all that apply..."
+      2. Q4_1: "This cross-section lab period prepared me for interpreting anatomical structures on radiological images."
+      3. Q4_2: "I am satisfied with the current presentation of anatomical structures in this lab period."
+      4. Q4_3: "I feel more confident in my abilities to identify anatomical structures on radiological images after this lab period."
+      5. Q7: "What changes, if any, would you like to see in this cross-section lab to help you prepare for interpreting radiological images?"
+      6. Q6: "Please feel free to share your experience with this cross-section lab below"
 
 2. Data Quality & Preprocessing
    1. Check for missing values, duplicates, data types
    2. Test result TestDuration -> time in seconds
    3. Post-test survey Q4_1, Q4_2, Q4_3 Likert scales -> 1-5
-   4. Outlier detection for test durations (boxplot method)
+   4. Validation
+      1. Question groups map to questions
+      2. Durations of reasonable length (0 < x < 3600 seconds)
+      3. Scores calculated correctly (question columns recorded 1/0 for correct/incorrect)
+   5. Outlier detection for test durations (boxplot me``thod)
 
 3. Descriptive Statistics & Visualizations
    1. Results: scores and durations
       1. Table (mean, sd, range, IQR) overall and split by cohort
-      2. Histogram by cohort with density overlay
-      3. Box plots comparing cohorts
+      2. Histogram by cohort overlaid on the same graph
+      3. Histogram by cohort, 2 graphs side-by-side with boxplot overlaid
       4. Scatter plot: duration vs. score with regression line
    2. Posttest: Q4_1, Q4_2, Q4_3
       1. Likert histogram comparing cohorts
@@ -102,3 +106,4 @@ Q4	Axial
       2. Effect sizes
       3. Visualization: Diverging stacked bar chart
 
+6. Brief summary of methods and results

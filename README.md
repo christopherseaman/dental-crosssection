@@ -42,11 +42,7 @@ A needs assessment survey will be offered to dental students to understand their
       2. Diverging bar chart for Likert responses
 
 4. Statistical Analysis
-   1. Power Analysis
-      1. Calculate achieved power given sample size and effect size
-      2. Determine minimum detectable effect size
-   
-   2. Test Score Analysis
+   1. Test Score Analysis
       1. Normality test (Shapiro-Wilk) for each cohort
       2. Based on normality:
          - If normal: Independent t-test
@@ -56,12 +52,12 @@ A needs assessment survey will be offered to dental students to understand their
          - For Mann-Whitney: r = Z/√N
       4. 95% confidence intervals for mean/median difference
 
-   3. Duration Analysis
+   2. Duration Analysis
       1. Normality test (Shapiro-Wilk)
       2. Choose test based on results (t-test or Mann-Whitney)
       3. Effect size and confidence intervals
 
-   4. Correlation Analysis
+   3. Correlation Analysis
       1. Test score vs. duration
          1. Normality test for both variables
          2. Choose correlation test:
@@ -70,7 +66,7 @@ A needs assessment survey will be offered to dental students to understand their
          3. Calculate correlation coefficient and p-value
          4. Plot correlation with confidence bands
 
-   5. Question Group Analysis
+   4. Question Group Analysis
       1. Normality tests per group
       2. Multiple comparison correction (Bonferroni)
       3. Effect sizes for each comparison

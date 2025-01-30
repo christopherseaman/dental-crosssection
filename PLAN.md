@@ -8,6 +8,31 @@ This project intends to develop an integrated cross-sectional anatomy curriculum
 
 A needs assessment survey will be offered to dental students to understand their level of preparedness for interpreting diagnostic images following the anatomy and radiology courses they took. During the lab, first-year dental students annotate unlabeled posterboards, working with their lab groups. The students then rotate around the other group's posterboards to fill in or correct labels before answers are revealed. Participants are randomly split into 2 groups: one experimental group that will be asked to identify structures on radiological images only and one control group that will take a similar test to the pretest. Lastly, a posttest survey is intended at gauging student satisfaction and feedback regarding the cross-sectional curriculum, as well as the experimental test's ability in measuring knowledge acquisition.
 
+## Heads
+
+### `posttest_survey.tsv` 
+
+```
+StartDate	EndDate	ID	Cohort	Q2	Q4_1	Q4_2	Q4_3	Q7	Q6
+12/3/24 11:50	12/3/24 11:51	S2841	Control		Somewhat agree	Somewhat agree	Strongly agree	I think it would be helpful to practice differentiating different types of images MRI vs CT. 	I had a great time! Thanks Daania! 
+```
+
+### `test_results.tsv` 
+
+```
+StartDate	EndDate	TestDuration	ID	Cohort	Q3	Q4	Q16	Q17	Q19	Q20	Q22	Q23	Q25	Q26	Q28	Q29	Q31	Q32	Q34	Q35	NumberCorrect	Score
+12/3/24 11:44	12/3/24 11:49	4m 59s 0ms	S2852	diagnostic-images	1	0	1	0	0	1	1	1	1	1	1	1	1	1	1	1	13	81%
+```
+
+### `question_groups.tsv` 
+
+```
+Question  QuestionGroup
+Q3	Axial
+Q4	Axial
+```
+
+
 ## Analysis Plan
 
 1. Import data

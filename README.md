@@ -78,9 +78,28 @@ A needs assessment survey will be offered to dental students to understand their
 
 5. Post-test Survey Analysis
    1. Likert Scale Questions (Q4_1, Q4_2, Q4_3)
-      1. Mann-Whitney U tests
-      2. Effect sizes
-      3. Visualization: Diverging stacked bar chart
+      1. Convert responses to numeric scale (1-5)
+         - Strongly disagree = 1
+         - Somewhat disagree = 2
+         - Neither agree nor disagree = 3
+         - Somewhat agree = 4
+         - Strongly agree = 5
+      2. Statistical Analysis
+         - Mann-Whitney U tests (appropriate for ordinal Likert data)
+         - Effect sizes (r = Z/√N) for meaningful differences
+         - Bonferroni correction for multiple comparisons
+      3. Visualization
+         - Diverging stacked bar charts
+         - Negative responses (disagree) extend left from center
+         - Positive responses (agree) extend right from center
+         - Neutral responses centered
+         - Percentage labels for responses ≥ 5%
+         - Separate plots by cohort and combined
+      4. Interpretation
+         - Compare response distributions between cohorts
+         - Consider both statistical significance and effect sizes
+         - Account for multiple comparisons in significance testing
+         - Evaluate practical significance of differences
 
 6. Brief summary of methods and results in README.md
 

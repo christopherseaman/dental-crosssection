@@ -164,20 +164,25 @@ Q4	Axial
 3. Score Boxplots (`figures/score_boxplot.png`)
    - Box-and-whisker plots comparing score distributions
    - Highlights median, quartiles, and potential outliers
+   - Question group analysis
+     - Stricted significance requirement using Boneferroni (0.0167)
+     - Only Axial questions significantly different at that threshold
+     - Coronal is close at p = 0.056, so possible could be significant with a larger sample (both questions and subjects)
+     - See `figures/forest_plot.png`
 
-4. Duration Boxplots (`figures/duration_boxplot.png`)
+1. Duration Boxplots (`figures/duration_boxplot.png`)
    - Box-and-whisker plots comparing test duration distributions
    - Identifies duration outliers
 
-5. Score vs Duration (`figures/score_vs_duration.png`)
+2. Score vs Duration (`figures/score_vs_duration.png`)
    - Scatter plot with regression line and 95% confidence bands
    - Visualizes weak negative correlation
 
-6. Forest Plot (`figures/forest_plot.png`)
+3. Forest Plot (`figures/forest_plot.png`)
    - Effect sizes and confidence intervals for question groups
    - Compares performance across different anatomical planes
 
-7. Likert Responses
+4. Likert Responses
    - By cohort (`figures/likert_responses_cross-section.png`, `figures/likert_responses_diagnostic-images.png`)
    - Combined (`figures/likert_responses_combined.png`)
    - Diverging stacked bar charts that display responses on a horizontal axis, with negative responses extending left from center and positive responses extending right
@@ -185,6 +190,8 @@ Q4	Axial
    - Note: Q4_1 was answered "Somewhat Agree" by all respondents
 
 ## Analysis Output
+
+> python3 analysis.py
 
 === Step 1: Data Import ===
 
@@ -222,13 +229,59 @@ Effect size: 0.153
 
 Bonferroni-corrected significance level: 0.0167 (0.05/3)
 
-=== Step 6: Correlation Analysis ===
+Question Group Analysis:
+
+Coronal:
+Effect size: 0.241
+p-value: 0.056 (not significant at α = 0.017)
+
+Sagittal:
+Effect size: 0.035
+p-value: 0.780 (not significant at α = 0.017)
+
+Axial:
+Effect size: 0.640
+p-value: 0.000 (significant at α = 0.017)
+
+=== Step 6: Summary Tables ===
+
+Score Summary Statistics:
+               Group   N   Mean     SD   Min    Q1  Median    Q3   Max   IQR
+0  diagnostic-images  31  0.545  0.154  0.25  0.44    0.56  0.63  0.88  0.19
+1      cross-section  32  0.722  0.148  0.25  0.63    0.75  0.81  1.00  0.18
+
+Duration Summary Statistics (minutes):
+               Group   N   Mean     SD    Min     Q1  Median     Q3     Max    IQR
+0  diagnostic-images  31  8.494  2.484  4.817  7.042   7.917  9.917  15.683  2.875
+1      cross-section  32  7.762  2.201  4.183  6.467   7.683  8.512  14.917  2.046
+
+Likert Response Counts by Question:
+
+Q4_1 - Prepared for interpreting
+radiological images:
+Q4_1               Strongly disagree  Somewhat disagree  Neither agree nor disagree  Somewhat agree  Strongly agree
+cross-section                      0                  0                           0              29               0
+diagnostic-images                  0                  0                           0              30               0
+
+Q4_2 - Satisfied with presentation
+of anatomical structures:
+Q4_2               Strongly disagree  Somewhat disagree  Neither agree nor disagree  Somewhat agree  Strongly agree
+cross-section                      0                  1                           4              16               8
+diagnostic-images                  0                  3                          10              14               3
+
+Q4_3 - More confident in identifying
+structures on images:
+Q4_3               Strongly disagree  Somewhat disagree  Neither agree nor disagree  Somewhat agree  Strongly agree
+cross-section                      0                  2                           4              17               6
+diagnostic-images                  2                  2                           7              15               4
+
+=== Step 7: Correlation Analysis ===
 
 Using Spearman correlation (non-normal data)
 Correlation coefficient: -0.185
 P-value: 0.146
 
-=== Step 7: Likert Analysis ===
+=== Step 8: Likert Analysis ===
 
 
 Q4_1:

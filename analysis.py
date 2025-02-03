@@ -89,6 +89,72 @@ def plot_distribution_by_cohort(data, value_col, cohort_col, title, xlabel, file
     plt.savefig(f'figures/{filename}.png')
     plt.close()
 
+def create_summary_table(data, value_col, cohort_col=None):
+    """Create summary statistics table overall and optionally by cohort."""
+    if cohort_col:
+        stats_by_group = []
+        for group in data[cohort_col].unique():
+            group_data = data[data[cohort_col] == group][value_col]
+            stats = {
+                'Group': group,
+                'N': len(group_data),
+                'Mean': group_data.mean(),
+                'SD': group_data.std(),
+                'Min': group_data.min(),
+                'Q1': group_data.quantile(0.25),
+                'Median': group_data.median(),
+                'Q3': group_data.quantile(0.75),
+                'Max': group_data.max(),
+                'IQR': group_data.quantile(0.75) - group_data.quantile(0.25)
+            }
+            stats_by_group.append(stats)
+        return pd.DataFrame(stats_by_group)
+    else:
+        stats = {
+            'N': len(data),
+            'Mean': data.mean(),
+            'SD': data.std(),
+            'Min': data.min(),
+            'Q1': data.quantile(0.25),
+            'Median': data.median(),
+            'Q3': data.quantile(0.75),
+            'Max': data.max(),
+            'IQR': data.quantile(0.75) - data.quantile(0.25)
+        }
+        return pd.DataFrame([stats])
+
+def create_likert_counts_table(data, question):
+    """Create table of response counts for a single Likert question."""
+    categories = ['Strongly disagree', 'Somewhat disagree', 
+                 'Neither agree nor disagree', 
+                 'Somewhat agree', 'Strongly agree']
+    
+    # Create counts for each cohort
+    cohorts = ['cross-section', 'diagnostic-images']
+    counts_by_cohort = []
+    
+    for cohort in cohorts:
+        cohort_data = data[data['Cohort'] == cohort]
+        counts = cohort_data[question].value_counts()
+        # Ensure all categories are present
+        counts = counts.reindex(categories, fill_value=0)
+        counts.name = cohort
+        counts_by_cohort.append(counts)
+    
+    # Combine into a DataFrame
+    return pd.DataFrame(counts_by_cohort, index=cohorts)
+
+def plot_score_duration_correlation(data, filename):
+    """Create scatter plot of score vs duration with regression line."""
+    plt.figure(figsize=(10, 6))
+    sns.regplot(x='DurationMinutes', y='ScoreNumeric', data=data,
+                scatter_kws={'alpha':0.5}, line_kws={'color': 'red'})
+    plt.title('Score vs Duration')
+    plt.xlabel('Duration (minutes)')
+    plt.ylabel('Score')
+    plt.savefig(f'figures/{filename}.png')
+    plt.close()
+
 def plot_boxplot(data, x_col, y_col, title, xlabel, ylabel, filename):
     """Create and save boxplot."""
     plt.figure(figsize=(10, 6))
@@ -155,6 +221,14 @@ def create_single_likert_plot(data, question, question_label, title, filename, b
 
 # Main Analysis
 def main():
+    # Define constants
+    likert_questions = ['Q4_1', 'Q4_2', 'Q4_3']
+    question_labels = [
+        'Prepared for interpreting\nradiological images',
+        'Satisfied with presentation\nof anatomical structures',
+        'More confident in identifying\nstructures on images'
+    ]
+    
     # Data Import
     print("\n=== Step 1: Data Import ===\n")
     test_results = pd.read_csv('data/test_results.tsv', sep='\t')
@@ -273,6 +347,38 @@ def main():
             'p-value': p_value
         })
     
+    # Print question group analysis results
+    print("\nQuestion Group Analysis:")
+    for result in group_results:
+        group = result['Group']
+        effect = result['Effect Size']
+        p_val = result['p-value']
+        sig = "significant" if p_val < bonferroni_alpha else "not significant"
+        print(f"\n{group}:")
+        print(f"Effect size: {effect:.3f}")
+        print(f"p-value: {p_val:.3f} ({sig} at α = {bonferroni_alpha:.3f})")
+    
+    # Summary Tables
+    print("\n=== Step 6: Summary Tables ===\n")
+    
+    print("Score Summary Statistics:")
+    score_stats = create_summary_table(test_results_clean, 'ScoreNumeric', 'Cohort')
+    print(score_stats.round(3))
+    
+    print("\nDuration Summary Statistics (minutes):")
+    duration_stats = create_summary_table(test_results_clean, 'DurationMinutes', 'Cohort')
+    print(duration_stats.round(3))
+    
+    # Print Likert response counts
+    print("\nLikert Response Counts by Question:")
+    for q, label in zip(likert_questions, question_labels):
+        print(f"\n{q} - {label}:")
+        likert_counts = create_likert_counts_table(posttest_survey_clean, q)
+        print(likert_counts)
+    
+    # Create score vs duration correlation plot
+    plot_score_duration_correlation(test_results_clean, 'score_vs_duration')
+    
     # Create forest plot
     plt.figure(figsize=(12, 6))
     y_pos = np.arange(len(group_results))
@@ -298,7 +404,7 @@ def main():
     plt.close()
     
     # Correlation Analysis
-    print("\n=== Step 6: Correlation Analysis ===\n")
+    print("\n=== Step 7: Correlation Analysis ===\n")
     score_duration_normal = all(test_normality(test_results_clean[col]) 
                               for col in ['ScoreNumeric', 'DurationSeconds'])
     
@@ -315,16 +421,10 @@ def main():
     print(f"P-value: {p_value:.3f}")
     
     # Likert Analysis
-    print("\n=== Step 7: Likert Analysis ===\n")
+    print("\n=== Step 8: Likert Analysis ===\n")
     
-    # Compare Likert responses between groups
+    # Statistical analysis of Likert responses
     likert_results = []
-    likert_questions = ['Q4_1', 'Q4_2', 'Q4_3']
-    question_labels = [
-        'Prepared for interpreting\nradiological images',
-        'Satisfied with presentation\nof anatomical structures',
-        'More confident in identifying\nstructures on images'
-    ]
     
     # Create individual plots for each question
     for q, label in zip(likert_questions, question_labels):

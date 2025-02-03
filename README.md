@@ -40,6 +40,7 @@ A needs assessment survey will be offered to dental students to understand their
    2. Posttest: Q4_1, Q4_2, Q4_3
       1. Likert histogram comparing cohorts
       2. Diverging bar chart for Likert responses
+      3. Table counts 
 
 4. Statistical Analysis
    1. Test Score Analysis
@@ -127,24 +128,27 @@ Q4	Axial
 
 ### Key Findings
 
-1. Test Performance
+1. Test Score
+   - Distributions of scores by cohort normally distributed ("not significantly non-normal by Shapiro-Wilk"), so t-test okay
    - Cross-section group (n=32) significantly outperformed diagnostic-images group (n=31)
    - Mean scores: 72.2% ± 14.8% vs 54.5% ± 15.4%
    - Large effect size (Cohen's d = 1.170, p < 0.001)
 
 2. Test Duration
+   - Both cohorts' durations not normally distributed, so using Mann-Whitney (non-parametric test)
    - No significant difference between groups
    - Cross-section: 7.8 ± 2.2 minutes
    - Diagnostic-images: 8.5 ± 2.5 minutes
    - Small effect size (r = 0.153, p = 0.167)
 
 3. Score-Duration Relationship
+   - Correlation between normal and non-normal numerical variables -> Spearman correlation
    - Weak negative correlation (ρ = -0.185)
    - Not statistically significant (p = 0.167)
 
 4. Student Feedback (Likert Scale)
    - Preparation for radiological interpretation (Q4_1): No difference between groups
-   - Satisfaction with presentation (Q4_2): Significant difference favoring control group (p = 0.016, r = 0.313)
+   - Satisfaction with presentation (Q4_2): Significant difference favoring cross-section group (p = 0.016, r = 0.313)
    - Confidence in structure identification (Q4_3): No significant difference (p = 0.167, r = 0.180)
 
 ### Generated Visualizations
@@ -181,8 +185,6 @@ Q4	Axial
    - Note: Q4_1 was answered "Somewhat Agree" by all respondents
 
 ## Analysis Output
-
-python analysis.py
 
 === Step 1: Data Import ===
 
